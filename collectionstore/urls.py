@@ -9,4 +9,5 @@ urlpatterns = [
     path('getItem/<int:item_id>/', GetItem.as_view()),
     path('Get-All-Items/<int:CL_id>/', get_Collection_items.as_view()),
     path('SignUp/', Authentication.as_view()),
+    path('trial/', trial),
 ]

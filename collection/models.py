@@ -9,22 +9,22 @@ authentication_options =  (
     ('Google', 'Google'),
     ('Facebook', 'Facebook'),
     ('Custom', 'Custom'),
-    )
+)
 
 TOPIC_CHOICES = (
     ('Books', 'Books'),
     ('Post Stamps', 'Post Stamps'),
     ('Whiskeys', 'Whiskeys'),
     ('Other', 'Other'),
-    )
+)
 
 FIELD_TYPES = (
-        ('integer', 'Integer'),
-        ('string', 'String'),
-        ('text', 'Multiline Text'),
-        ('boolean', 'Boolean'),
-        ('date', 'Date'),
-    )
+    ('integer', 'Integer'),
+    ('string', 'String'),
+    ('text', 'Multiline Text'),
+    ('boolean', 'Boolean'),
+    ('date', 'Date'),
+)
 
 def default_custom_fields():
     return {}
@@ -121,7 +121,7 @@ class CustomField(models.Model):
 class Tag(models.Model):
     name = models.CharField(max_length=50)
     def __str__(self):
-        return self.name
+        return str(self.name)
     
 
 class Collection(models.Model):
@@ -133,26 +133,27 @@ class Collection(models.Model):
     custom_fields = models.JSONField(default=default_custom_fields, blank=True)
     
     def __str__(self):
-        return self.name    
+        return str(f"{self.name} <--> {self.id}")   
     
 class Item(models.Model):
     collection = models.ForeignKey (Collection, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     tags = models.ManyToManyField(Tag, blank=True)
     additional_field_data = models.JSONField(default=default_custom_fields, blank=True, null=True)
-
     def __str__(self):
-        return f'{self.name} of collection {self.collection.name} <==> {self.id}'
+        # return f'{self.name} of collection {self.collection.name} <==> {self.id}'
+        return str(self.id)
+        
 
 class Comment(models.Model):
-    
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     text = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
-
+    
     def __str__(self):
-        return self.user.email
+        return str(self.text)
+        
 
 class Like(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)

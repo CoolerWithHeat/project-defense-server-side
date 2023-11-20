@@ -13,6 +13,7 @@ class dataManager:
             tags = data.get('tags', None)
             customFields = data.get('additionalFields', None)
             valid_customFields = checkData(collection_instance, customFields) if customFields else {}
+            # print(valid_customFields, ' it was')
             tag_instances = []
             if name and collection_instance:
                     for eachTag in tags:
@@ -30,12 +31,12 @@ def checkData(structureInstance, data):
     structure_dict = {key: value for key, value in structure}
 
     if not any(key in data for key in structure_dict):
-        return False
+        return {}
     
     for key, value_type in structure:
         if key in data:
             if value_type.lower() == 'string' and not isinstance(data[key], str):
-                return False
+                return {}
 
     return data
 
@@ -84,3 +85,21 @@ def extract_custom_fields(model_instance, *args, **kwargs):
         extracted_fields[field_name] = value
 
     return extracted_fields
+
+def validate_custom_fields(data):
+    if not isinstance(data, list):
+        return False  # Ensure the received data is a list
+
+    for field in data:
+        if not isinstance(field, list):
+            return False  # Each field should be a list
+        
+        # Ensure the first element in the inner list is a string (field name)
+        if not isinstance(field[0], str):
+            return False
+
+        # No restriction on the second element, it can be any data type
+        if len(field) < 2:
+            return False  # Each field should have at least two elements
+
+    return True  # If all checks pass, return True

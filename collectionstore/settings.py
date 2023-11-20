@@ -1,4 +1,5 @@
 from pathlib import Path
+import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -10,6 +11,7 @@ ALLOWED_HOSTS = []
 
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -21,6 +23,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'corsheaders',
     'boto3',
+    'django_elasticsearch_dsl',
 ]
 
 MIDDLEWARE = [
@@ -67,7 +70,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'collectionstore.wsgi.application'
+ASGI_APPLICATION = 'collectionstore.asgi.application'
 
 
 # REST_FRAMEWORK = {
@@ -80,8 +83,12 @@ AUTH_USER_MODEL = 'collection.User'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'projectdefence',  # Replace with your database name
+        'USER': 'root',
+        'PASSWORD': 'asskicker2004',  # Ensure this is the correct password
+        'HOST': 'localhost',
+        'PORT': '3306',
     }
 }
 
@@ -100,6 +107,15 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
 
 LANGUAGE_CODE = 'en-us'
 

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<h1>done all of ya !</h1>
+<div>
+    <input onchange="ChangeHandler()" id="dataholder" type="text">
+    <div id="searchRecommendation">
+        <!-- <p>asdas</p> -->
+    </div>
+</div>
+<script>
+
+    const value = document.getElementById('dataholder').value
+    const socket = new WebSocket('ws:127.0.0.1:8000/search/')
+    socket.onmessage = (flow)=>{
+        const suggestion = JSON.parse(flow.data).result || null
+        if (suggestion)
+            for (let tag_index=0; tag_index<=suggestion.length; tag_index++){
+                document.getElementById('searchRecommendation').innerHTML += `<p>${suggestion[tag_index] || ''}</p>`
+            }
+        
+    }
+    
+    const submitComment = ()=>{
+        socket.send(JSON.stringify({tagID:'1', operation:'delete_tag'}))
+    }
+
+    function ChangeHandler(){
+        var inputValue = document.getElementById("dataholder").value;
+        socket.send(JSON.stringify({'keyword':inputValue}))
+        document.getElementById("dataholder").value = '';
+    }
+
+</script>

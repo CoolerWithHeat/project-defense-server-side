@@ -6,10 +6,26 @@ from .permissions import *
 from .serializers import *
 from .parsers import GoogleResponseParser, FacebookResponseParser
 from django.contrib.auth import get_user_model
-from .customFields import save_custom_field, extract_custom_fields, extract_collection_fields, checkData, dataManager
+from .customFields import *
 from django.shortcuts import get_object_or_404
 from rest_framework.authtoken.models import Token
 import json, random, string, requests
+from django_elasticsearch_dsl import Document, fields
+from django_elasticsearch_dsl.registries import registry
+from django_elasticsearch_dsl.search import Search
+
+@registry.register_document
+class ItemDocument(Document):
+    class Index:
+        name = 'items'  # Choose a suitable index name
+
+    name = fields.TextField(attr='name')
+
+    class Django:
+        model = Item
+
+def trial(request):
+    return render(request, 'index.html')
 
 def GeneratePassword(length):
 
@@ -29,12 +45,17 @@ class CreateCollection(APIView):
     permission_classes  = [DenyAnonymousPermission] 
     def post(self, request, *args, **kwargs):
         data = json.loads(request.body) if request.body else None
-        user = get_user_model().objects.get(email='mansur@gmail.com')
+        user = request.user
         processedData = {**data, 'author': user.id}
         processedData['topic'] = TOPIC_CHOICES[int(processedData.get('topic', 0))][0]
         serializer = CollectionSerializer(data=processedData)
         if serializer.is_valid():
-            serializer.save()
+            instance = serializer.save()
+            additional_fields = data.get('customFields', None)
+            customFields = validate_custom_fields(additional_fields)
+            if customFields:
+                instance.custom_fields = additional_fields
+            instance.save()
             return Response({'collection':serializer.data})
         else:
             return Response({'error': 'invalid or insufficient data'}, status=500)
@@ -136,3 +157,5 @@ class Authentication(APIView):
                     user.save()
 
                 return Response({'success': True, 'token': str(token)}, status=200)
+            
+
