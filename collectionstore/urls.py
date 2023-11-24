@@ -27,5 +27,4 @@ urlpatterns = [
     path('CheckAdmin/', CheckAdmin.as_view()),
     path('GrantAdmin/', GrantAdmin.as_view()),
     path('RemoveAdmin/', RemoveAdmin.as_view()),
-    # path('advancedSearch/', TrialSearch.as_view()),
 ]

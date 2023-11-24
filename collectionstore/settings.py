@@ -83,12 +83,8 @@ AUTH_USER_MODEL = 'collection.User'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'projectdefence',  # Replace with your database name
-        'USER': 'root',
-        'PASSWORD': 'asskicker2004',  # Ensure this is the correct password
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 

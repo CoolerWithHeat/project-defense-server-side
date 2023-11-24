@@ -322,7 +322,7 @@ class GetIndividualCollections(APIView):
                 serializedCollection  = CollectionSerializer(requested_collection, many=False)
                 return Response({'collection': serializedCollection.data}, status=200)
             except:
-                return Response({'result': False}, status=500)
+                return Response({'collection': False}, status=500)
 
 
 class GetUsers(APIView):

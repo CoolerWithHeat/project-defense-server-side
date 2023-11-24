@@ -15,14 +15,17 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-import collections.abc
+try:
+    import collections.abc as collections_abc  # only works on python 3.3+
+except ImportError:
+    import collections as collections_abc
 
 from .utils import DslBase
 
 
 def SF(name_or_sf, **params):
     # {"script_score": {"script": "_score"}, "filter": {}}
-    if isinstance(name_or_sf, collections.abc.Mapping):
+    if isinstance(name_or_sf, collections_abc.Mapping):
         if params:
             raise ValueError("SF() cannot accept parameters when passing in a dict.")
         kwargs = {}
@@ -38,10 +41,10 @@ def SF(name_or_sf, **params):
         elif len(sf) == 1:
             name, params = sf.popitem()
         else:
-            raise ValueError(f"SF() got an unexpected fields in the dictionary: {sf!r}")
+            raise ValueError("SF() got an unexpected fields in the dictionary: %r" % sf)
 
         # boost factor special case, see elasticsearch #6343
-        if not isinstance(params, collections.abc.Mapping):
+        if not isinstance(params, collections_abc.Mapping):
             params = {"value": params}
 
         # mix known params (from _param_defs) and from inside the function
@@ -71,7 +74,7 @@ class ScoreFunction(DslBase):
     name = None
 
     def to_dict(self):
-        d = super().to_dict()
+        d = super(ScoreFunction, self).to_dict()
         # filter and query dicts should be at the same level as us
         for k in self._param_defs:
             if k in d[self.name]:
@@ -87,7 +90,7 @@ class BoostFactor(ScoreFunction):
     name = "boost_factor"
 
     def to_dict(self):
-        d = super().to_dict()
+        d = super(BoostFactor, self).to_dict()
         if "value" in d[self.name]:
             d[self.name] = d[self.name].pop("value")
         else:
