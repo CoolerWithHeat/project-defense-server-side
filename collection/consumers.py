@@ -31,7 +31,7 @@ def comment_addition(text):
         try:
             text['item'] = Item.objects.get(id=text['item'])
             comment = Comment.objects.create(**text)
-            return None, {'id':comment.id, 'text':comment.text, 'commenter':'Anonymous' if comment.user.full_name=='Not Known' else comment.user.full_name}
+            return None, {'id':comment.id, 'text':comment.text, 'commenter':'No Name' if comment.user.full_name=='Not Known' else comment.user.full_name}
         except:
             return 'Please Sign in !', None
 
@@ -52,7 +52,7 @@ def retrieveTime(timestamp):
 
 def Get_Item_ID(Connection, itemItself=False):
     try:
-        itemID = Connection.scope['url_route']['kwargs']['comment_id']
+        itemID = Connection.scope['url_route']['kwargs']['item_id']
         return int(itemID)
     except:
         return False
@@ -62,7 +62,7 @@ class CommentsConsumer(AsyncConsumer):
 
     async def websocket_connect(self, event):
         requested_item_comment_flow = await database_sync_to_async(Get_Item_ID)(self)
-
+        ConnectionProperties.add(self)
         if requested_item_comment_flow:
             self.layerCode = f'comments_line_{requested_item_comment_flow}'
             await self.send({
@@ -73,12 +73,20 @@ class CommentsConsumer(AsyncConsumer):
                 self.layerCode,
                 self.channel_name
             )
-            ConnectionProperties.add(self)
         else:
-           raise BreakConnection
+            await self.channel_layer.group_discard(
+                self.layerCode,
+                self.channel_name,
+            )
+            raise BreakConnection
 
 
     async def websocket_disconnect(self, event):
+        ConnectionProperties.discard(self)
+        await self.channel_layer.group_discard(
+            self.layerCode,
+            self.channel_name,
+        )
         raise BreakConnection
     
     async def message_send(self, event):
@@ -129,9 +137,7 @@ class CommentsConsumer(AsyncConsumer):
             commenter = "Anonymous" if instance.user.full_name == 'Not Known' else instance.user.full_name
             date = retrieveTime(instance.timestamp)
             response = {'id':requestedID, 'commenter':commenter, 'date':date, 'text': comment_text}
-            
-            if belongs_to == requestedID:
-                async_to_sync(self.channel_layer.group_send)(self.layerCode, {
-                    'type': 'message.send',
-                    'text': json.dumps({'comment': response})      
-                })
+            async_to_sync(self.channel_layer.group_send)(self.layerCode, {
+                'type': 'message.send',
+                'text': json.dumps({'comment': response})      
+            })

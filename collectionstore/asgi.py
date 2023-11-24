@@ -6,7 +6,7 @@ from django.core.asgi import get_asgi_application
 from django.urls import re_path
 from channels.security.websocket import AllowedHostsOriginValidator
 from collection.consumers import *
-from collection.full_text_search import SearchBase
+from collection.tagAuto_complete import TagRecommendation
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'collection.settings')
 
 django_asgi_server = get_asgi_application()
@@ -20,8 +20,8 @@ application = ProtocolTypeRouter({
             URLRouter([
                 # re_path("comments-flow/<int:comment_id>/", CommentsConsumer.as_asgi()),
                 # re_path(r"chat/", SocketHandlers.ConsumerChatHandler.as_asgi()),
-                re_path(r"comments-flow/(?P<comment_id>\w+)/", CommentsConsumer.as_asgi()),
-                re_path("search/", SearchBase.as_asgi()),
+                re_path(r"comments-flow/(?P<item_id>\w+)/", CommentsConsumer.as_asgi()),
+                re_path("search/", TagRecommendation.as_asgi()),
                 # re_path(r"ClientsMonitor/", SocketHandlers.Admin_Clients_Notification.as_asgi()),
             ])
         )

@@ -7,7 +7,7 @@ SECRET_KEY = 'django-insecure-#svj*_^jg99jkd=8e)m41_!wjn#8)rq8v4ubw6-1d!#35150=6
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 INSTALLED_APPS = [
@@ -23,7 +23,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'corsheaders',
     'boto3',
-    'django_elasticsearch_dsl',
+    'algoliasearch_django',
 ]
 
 MIDDLEWARE = [
@@ -92,6 +92,11 @@ DATABASES = {
     }
 }
 
+ALGOLIA = {
+    'APPLICATION_ID': '0GKVA5OZCY',
+    'API_KEY': 'f939258f819e10ba6f11386ce46b7ae7',
+    'AUTO_INDEXING': True,
+}
 
 AUTH_PASSWORD_VALIDATORS = [
     {

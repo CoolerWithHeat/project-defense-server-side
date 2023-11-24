@@ -12,8 +12,7 @@ class dataManager:
             name = data.get('name', None)
             tags = data.get('tags', None)
             customFields = data.get('additionalFields', None)
-            valid_customFields = checkData(collection_instance, customFields) if customFields else {}
-            # print(valid_customFields, ' it was')
+            valid_customFields = customFields
             tag_instances = []
             if name and collection_instance:
                     for eachTag in tags:
@@ -24,21 +23,7 @@ class dataManager:
                 return False, False
         except:
             return False, False
-        
-def checkData(structureInstance, data):
-    structure = structureInstance.custom_fields if structureInstance.custom_fields else []
-    
-    structure_dict = {key: value for key, value in structure}
 
-    if not any(key in data for key in structure_dict):
-        return {}
-    
-    for key, value_type in structure:
-        if key in data:
-            if value_type.lower() == 'string' and not isinstance(data[key], str):
-                return {}
-
-    return data
 
 
 
@@ -70,11 +55,8 @@ def extract_custom_fields(model_instance, *args, **kwargs):
     custom_fields = model_instance.custom_fields if model_instance.custom_fields else []
     extracted_fields = {}
 
-    # Extract each custom field and its data
     for field in custom_fields:
-        field_name, field_data_type, value = field
-
-        # Convert data to appropriate Python types
+        field_name, field_data_type = field
         if field_data_type == 'integer':
             value = int(value) if value is not None else None
         elif field_data_type == 'boolean':

@@ -1,6 +1,12 @@
 import requests
 from django.db import models
 from django.core.files.base import ContentFile
+import algoliasearch_django as algoliasearch
+from algoliasearch_django import AlgoliaIndex
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from algoliasearch_django.decorators import register
+from algoliasearch_django import AlgoliaIndex, register
 from django.contrib.auth.models import (
     BaseUserManager, AbstractBaseUser
 )
@@ -28,14 +34,6 @@ FIELD_TYPES = (
 
 def default_custom_fields():
     return {}
-
-
-def download_image(url):
-    response = requests.get(url)
-    if response.status_code == 200:
-        return ContentFile(response.content)
-    return None
-
 
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None):
@@ -72,17 +70,18 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser):
+    
     email = models.EmailField(
         verbose_name='email address',
         max_length=255,
         unique=True,
     )
-    full_name = models.CharField(max_length=45, null=False, blank=False, default='Not Known')
-    authenticated_by = models.CharField(choices=authentication_options, max_length=8, default=authentication_options[0][0])
-    profile_image = models.FileField(default='itransition_logo.png', blank=True, null=True)
-    is_active = models.BooleanField(default=True)
-    staff = models.BooleanField(default=False)
-    admin = models.BooleanField(default=False)
+    full_name =         models.CharField(max_length=45, null=False, blank=False, default='Not Known')
+    authenticated_by =  models.CharField(choices=authentication_options, max_length=8, default=authentication_options[0][0])
+    profile_image =     models.FileField(default='itransition_logo.png', blank=True, null=True)
+    is_active =         models.BooleanField(default=True)
+    staff =             models.BooleanField(default=False)
+    admin =             models.BooleanField(default=False)
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
@@ -141,8 +140,10 @@ class Item(models.Model):
     tags = models.ManyToManyField(Tag, blank=True)
     additional_field_data = models.JSONField(default=default_custom_fields, blank=True, null=True)
     def __str__(self):
-        # return f'{self.name} of collection {self.collection.name} <==> {self.id}'
-        return str(self.id)
+        return f'{self.name} of collection {self.collection.name} <==> {self.id}'
+    
+    def tag_names(self):
+        return [str(tags) for tags in self.tags.all()]
         
 
 class Comment(models.Model):
@@ -161,3 +162,19 @@ class Like(models.Model):
 
     def __str__(self):
         return self.user.email
+    
+
+
+# @receiver(post_save, sender=Item)
+# def update_item(sender, instance, created, **kwargs):
+#     if created:
+#         item_index = ItemIndex()
+#         item_index.add_object(instance)
+
+# @receiver(post_save, sender=Collection)
+# def update_colllection(sender, instance, **kwargs):
+#     register(instance.__class__).update_object(instance)
+
+# @receiver(post_save, sender=Comment)
+# def update_comment(sender, instance, **kwargs):
+#     algoliasearch.save_record(instance)
