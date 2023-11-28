@@ -82,6 +82,7 @@ class User(AbstractBaseUser):
     is_active =         models.BooleanField(default=True)
     staff =             models.BooleanField(default=False)
     admin =             models.BooleanField(default=False)
+    
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
@@ -162,19 +163,3 @@ class Like(models.Model):
 
     def __str__(self):
         return self.user.email
-    
-
-
-# @receiver(post_save, sender=Item)
-# def update_item(sender, instance, created, **kwargs):
-#     if created:
-#         item_index = ItemIndex()
-#         item_index.add_object(instance)
-
-# @receiver(post_save, sender=Collection)
-# def update_colllection(sender, instance, **kwargs):
-#     register(instance.__class__).update_object(instance)
-
-# @receiver(post_save, sender=Comment)
-# def update_comment(sender, instance, **kwargs):
-#     algoliasearch.save_record(instance)

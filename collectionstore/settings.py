@@ -7,8 +7,7 @@ SECRET_KEY = 'django-insecure-#svj*_^jg99jkd=8e)m41_!wjn#8)rq8v4ubw6-1d!#35150=6
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
-
+ALLOWED_HOSTS = ['16.171.15.58']
 
 INSTALLED_APPS = [
     'daphne',
@@ -37,14 +36,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOW_ALL_ORIGINS= True
-
-# CORS_ALLOWED_ORIGINS = [
-#     "https://example.com",
-#     "https://sub.example.com",
-#     "http://localhost:8080",
-#     "http://127.0.0.1:9000",
-# ]
+CORS_ALLOWED_ORIGINS = [
+    "http://ec2-51-20-108-248.eu-north-1.compute.amazonaws.com",
+]
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -71,13 +65,6 @@ TEMPLATES = [
 ]
 
 ASGI_APPLICATION = 'collectionstore.asgi.application'
-
-
-# REST_FRAMEWORK = {
-#     'DEFAULT_PERMISSION_CLASSES': [
-#         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
-#     ]
-# }
 
 AUTH_USER_MODEL = 'collection.User'
 

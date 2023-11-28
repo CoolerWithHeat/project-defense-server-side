@@ -62,8 +62,9 @@ class CommentsConsumer(AsyncConsumer):
 
     async def websocket_connect(self, event):
         requested_item_comment_flow = await database_sync_to_async(Get_Item_ID)(self)
-        ConnectionProperties.add(self)
+        print(requested_item_comment_flow)
         if requested_item_comment_flow:
+            ConnectionProperties.add(self)
             self.layerCode = f'comments_line_{requested_item_comment_flow}'
             await self.send({
                 "type": "websocket.accept",
@@ -130,14 +131,13 @@ class CommentsConsumer(AsyncConsumer):
     @receiver(post_save, sender=Comment)
     def handle_model_change(sender, instance, created, **kwargs):
         self = ConnectionProperties.pop() if ConnectionProperties else None
-        if self:
-            requestedID = Get_Item_ID(self)
-            comment_text = instance.text
-            belongs_to = instance.item.id
-            commenter = "Anonymous" if instance.user.full_name == 'Not Known' else instance.user.full_name
-            date = retrieveTime(instance.timestamp)
-            response = {'id':requestedID, 'commenter':commenter, 'date':date, 'text': comment_text}
-            async_to_sync(self.channel_layer.group_send)(self.layerCode, {
-                'type': 'message.send',
-                'text': json.dumps({'comment': response})      
-            })
+        requestedID = Get_Item_ID(self)
+        comment_text = instance.text
+        belongs_to = instance.item.id
+        commenter = "Anonymous" if instance.user.full_name == 'Not Known' else instance.user.full_name
+        date = retrieveTime(instance.timestamp)
+        response = {'id':requestedID, 'commenter':commenter, 'date':date, 'text': comment_text}
+        async_to_sync(self.channel_layer.group_send)(self.layerCode, {
+            'type': 'message.send',
+            'text': json.dumps({'comment': response})      
+        })

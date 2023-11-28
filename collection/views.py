@@ -114,17 +114,21 @@ class CreateItem(APIView):
     def post(self, request, CL_id, *args, **kwargs):
         item_Fields = json.loads(request.body) if request.body else None
         requested_collection = get_object_or_404(Collection, id=CL_id)
-        parsedFields, tags = dataManager.sort_item_data(requested_collection, item_Fields)
-        if parsedFields:
-            item_instance = Item(**parsedFields)
-            serializedItem = ItemSerializer(item_instance, many=False)
-            item_instance.save()
-            if tags:
-                for tag in tags:
-                    item_instance.tags.add(tag)
-            return Response({'item': serializedItem.data}, status=200)
-        else:
-            return Response({'error': 'invalid or insufficient data'}, status=500)
+        user = request.user
+        eligible_user = requested_collection.author == user or user.admin
+        if eligible_user:
+            parsedFields, tags = dataManager.sort_item_data(requested_collection, item_Fields)
+            if parsedFields:
+                item_instance = Item(**parsedFields)
+                serializedItem = ItemSerializer(item_instance, many=False)
+                item_instance.save()
+                if tags:
+                    for tag in tags:
+                        item_instance.tags.add(tag)
+                return Response({'item': serializedItem.data}, status=200)
+            else:
+                return Response({'error': 'invalid or insufficient data'}, status=500)
+        return Response({'error': 'insufficient privileges!'}, status=500)
         
 class GetItem(APIView):
     def get(self, request, item_id, *args, **kwargs):
@@ -145,10 +149,14 @@ class get_Collection_items(APIView):
         return Response({'items': serializedItem.data}, status=200)
 
 class get_Collections(APIView):
+    permission_classes  = [DenyAnonymousPermission]
     def get(self, request, *args, **kwargs):
-        requested_collections = Collection.objects.all()
-        Serialized_Collections = CollectionSerializer(requested_collections, many=True)  
-        return Response({'collections': Serialized_Collections.data}, status=200)
+        requested_collections = Collection.objects.filter(author=request.user)
+        if requested_collections:
+            Serialized_Collections = CollectionSerializer(requested_collections, many=True)  
+            return Response({'collections': Serialized_Collections.data}, status=200)
+        else:
+            return Response({'collections': []}, status=200)
     
 class Authentication(APIView):
 
@@ -333,16 +341,14 @@ class GetUsers(APIView):
         return Response({'users': serialized_data.data}, status=200)
     
 class CollectionsForAdmins(APIView):
-    permission_classes = [DenyAnonymousPermission]
+    permission_classes = [DenyAnonymousPermission, OnlyAdmin]
     def get(self, request, *args, **kwargs):
-        data = json.loads(request.body) if request.body else None
-        if data:
-            try:
-                requested_collection = Collection.objects.get(id=data.get('id'))
-                serializedCollection  = CollectionSerializer(requested_collection, many=False)
-                return Response({'collection': serializedCollection.data}, status=200)
-            except:
-                return Response({'result': False}, status=500)
+        try:
+            requested_collections = Collection.objects.all()
+            serializedCollections  = CollectionSerializer(requested_collections, many=True)
+            return Response({'collections': serializedCollections.data}, status=200)
+        except:
+            return Response({'result': False}, status=500)
             
 class BlockUser(APIView):
     permission_classes = [DenyAnonymousPermission, OnlyAdmin]
